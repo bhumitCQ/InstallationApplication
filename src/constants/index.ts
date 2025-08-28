@@ -1,0 +1,1 @@
+export const supportedPlatforms = ['win32', 'darwin', 'linux'];
