@@ -21,7 +21,7 @@ export abstract class Installer {
     async checkDockerVersion(): Promise<false | string> {
         const startTime = Date.now();
         const endTime = startTime + 60 * 1000;
-        while (startTime < endTime) {
+        while (Date.now() < endTime) {
             try {
                 if (!this.dockerInstance) {
                     return false;

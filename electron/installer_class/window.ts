@@ -28,6 +28,9 @@ export class WindowInstaller extends Installer {
             "Docker Desktop.exe"
         );
         try {
+            if (!fs.existsSync(dockerDesktopPath)) {
+                return;
+            }
             spawn(dockerDesktopPath, [], {
                 detached: true,
                 windowsHide: false,
