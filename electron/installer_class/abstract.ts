@@ -19,16 +19,19 @@ export abstract class Installer {
     abstract executeStep(step: number): Promise<import('mitt').Emitter<{}>>
 
     async checkDockerVersion(): Promise<false | string> {
-        try {
-            if (!this.dockerInstance) {
-                return false;
+        const startTime = Date.now();
+        const endTime = startTime + 60 * 1000;
+        while (startTime < endTime) {
+            try {
+                if (!this.dockerInstance) {
+                    return false;
+                }
+                const version = await this.dockerInstance.version();
+                return version.Version;
+            } catch (erro) {
             }
-            const version = await this.dockerInstance.version();
-            return version.Version;
-        } catch (erro) {
-            console.error(erro);
-            return false;
         }
+        return false;
     }
 
     async checkForImages(): Promise<Array<string>> {

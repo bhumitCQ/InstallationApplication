@@ -18,6 +18,24 @@ const dockerURL = 'https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20
 export class WindowInstaller extends Installer {
     constructor() {
         super();
+        this.#init();
+    }
+    async #init() {
+        const dockerDesktopPath = path.join(
+            "C:\\Program Files",
+            "Docker",
+            "Docker",
+            "Docker Desktop.exe"
+        );
+        try {
+            spawn(dockerDesktopPath, [], {
+                detached: true,
+                windowsHide: false,
+                stdio: "ignore",
+            }).unref();
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     async checkWSLAndVMP(): Promise<{ wsl: boolean, vmp: boolean }> {
@@ -100,15 +118,29 @@ export class WindowInstaller extends Installer {
                 });
 
                 child.on("exit", (code) => {
-                    console.log(code);
                     if (code === 0) {
-                        events.emit("docker-install-complete", { needsRestart: false });
-                        return;
+                        const dockerDesktopPath = path.join(
+                             "C:\\Program Files",
+                            "Docker",
+                            "Docker",
+                            "Docker Desktop.exe"
+                        );
+                        try {
+                            spawn(dockerDesktopPath, [], {
+                                detached: true,
+                                windowsHide: false,
+                                stdio: "ignore",
+                            }).unref();
+                            events.emit("docker-install-complete", { needsRestart: false });
+                            return;
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        events.emit(
+                            "docker-install-event",
+                            `Docker install failed (exit code ${code}).`
+                        );
                     }
-                    events.emit(
-                        "docker-install-event",
-                        `Docker install failed (exit code ${code}).`
-                    );
                 });
             } catch (err: any) {
                 events.emit("docker-install-event", err?.message ?? String(err));
