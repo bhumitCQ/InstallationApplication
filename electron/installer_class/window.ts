@@ -299,7 +299,7 @@ export class WindowInstaller extends Installer {
             return 2;
         }
 
-        return 2;
+        return 3;
     }
 
 

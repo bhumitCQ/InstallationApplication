@@ -25,6 +25,7 @@
         ]
       }
     ],
+    "requestedExecutionLevel": "requireAdministrator",
     "artifactName": "${productName}_${version}.${ext}"
   },
   "nsis": {
