@@ -14,7 +14,11 @@ export const ProcessPage = () => {
             console.log({ currentProgressStep });
             return currentProgressStep ?? 1;
             return 0;
-        }
+        },
+        refetchInterval: 2000,
+        refetchOnWindowFocus: false,
+        staleTime: 0,
+        retry: false,
     });
 
     if (currentProgressStep.isLoading || currentProgressStep.error) {

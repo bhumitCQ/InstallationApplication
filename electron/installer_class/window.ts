@@ -21,52 +21,42 @@ export class WindowInstaller extends Installer {
     }
 
     async checkWSLAndVMP(): Promise<{ wsl: boolean, vmp: boolean }> {
-        const result =  await new Promise((resolve, reject) => {
+        const result =  await new Promise<{ wsl: boolean, vmp: boolean }>((resolve) => {
             // Query both features at once
             const features = [
                 "Microsoft-Windows-Subsystem-Linux",
                 "VirtualMachinePlatform"
             ];
+            const ps = `$names = @('${features[0]}','${features[1]}'); Get-WindowsOptionalFeature -Online | Where-Object { $_.FeatureName -in $names } | Select-Object FeatureName,State | ConvertTo-Json -Compress`;
             execFile(
                 "powershell.exe",
                 [
                     "-Command",
-                    `Get-WindowsOptionalFeature -Online -FeatureName ${features.join(",")} | Select-Object FeatureName,State | ConvertTo-Json`
+                    ps
                 ],
                 { windowsHide: true },
                 (err, stdout, stderr) => {
-                    if (err) return {
-                        wsl: false,
-                        vmp: false,
-                    };
+                    if (err) {
+                        console.error(err);
+                        return resolve({ wsl: false, vmp: false });
+                    }
                     try {
+                        console.log(stdout);
                         const parsed = JSON.parse(stdout);
                         // Sometimes it's a single object if only one item, ensure array
                         const arr = Array.isArray(parsed) ? parsed : [parsed];
                         const result = {
-                            wsl: arr.some(f => f.FeatureName === features[0] && f.State === "Enabled"),
-                            vmp: arr.some(f => f.FeatureName === features[1] && f.State === "Enabled")
+                            wsl: arr.some(f => f.FeatureName === features[0] && f.State == "2"),
+                            vmp: arr.some(f => f.FeatureName === features[1] && f.State == "2")
                         };
-                        resolve(result);
+                        return resolve(result);
                     } catch (e) {
-                        resolve({
-                            wsl: false,
-                            vmp: false,
-                        })
+                        return resolve({ wsl: false, vmp: false });
                     }
                 }
             );
         });
-        if (typeof result !== 'object') {
-            return {
-                wsl: false,
-                vmp: false,
-            }
-        }
-        return {
-            wsl: true,
-            vmp: true,
-        }
+        return result;
     }
 
     async downloadDocker() {
@@ -260,20 +250,24 @@ export class WindowInstaller extends Installer {
     }
 
     async checkCurrentStep(): Promise<number> {
-        const isWslInstalled = await this.checkWslVersion();
-        console.log({ isWslInstalled });
-        if (isWslInstalled !== 2) {
-            return 1;
-        }
-        const isDockerInsalled = await this.checkDockerVersion();
-        if (!isDockerInsalled) {
-            return 2;
-        }
+        // Order matters: enable features -> install WSL -> install Docker -> images
         const isWslAndVMPEnabled = await this.checkWSLAndVMP();
         if (!isWslAndVMPEnabled.vmp || !isWslAndVMPEnabled.wsl) {
             return 0;
         }
-        return 3;
+
+        const wslVersion = await this.checkWslVersion();
+        console.log(wslVersion);
+        if (wslVersion !== 2) {
+            return 1;
+        }
+
+        const dockerVersion = await this.checkDockerVersion();
+        if (!dockerVersion) {
+            return 2;
+        }
+
+        return 2;
     }
 
 
