@@ -28,6 +28,7 @@ export abstract class Installer {
                     return false;
                 }
                 const version = await this.dockerInstance.version();
+                console.log('Docker Versin', version);
                 return version.Version;
             } catch (erro) {
             }

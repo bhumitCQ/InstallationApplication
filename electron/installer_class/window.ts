@@ -277,31 +277,38 @@ export class WindowInstaller extends Installer {
     }
 
     async checkWslVersion(): Promise<false | number> {
-        const [stdout, error] = await execPromise("wsl.exe", ["--version"]);
+        console.log("Checking WSL Version");
+        const [stdout, error] = await execPromise("wsl.exe --version");
         if (error) {
+            console.log("WSL not installed", error);
             return false;
         }
+        console.log("WSL Version Output", stdout);
         const wslParsedResponse = this.parseWslStdout(stdout);
         return parseInt(wslParsedResponse.wslVersion)
     }
 
     async checkCurrentStep(): Promise<number> {
         // Order matters: enable features -> install WSL -> install Docker -> images
-        // const isWslAndVMPEnabled = await this.checkWSLAndVMP();
-        // if (!isWslAndVMPEnabled.vmp || !isWslAndVMPEnabled.wsl) {
-        //     return 0;
-        // }
+        console.log("Checking current step");
+        const isWslAndVMPEnabled = await this.checkWSLAndVMP();
+        if (!isWslAndVMPEnabled.vmp || !isWslAndVMPEnabled.wsl) {
+            return 0;
+        }
+        console.log("WSL and VMP enabled");
 
         const wslVersion = await this.checkWslVersion();
         console.log(wslVersion);
         if (wslVersion !== 2) {
             return 1;
         }
+        console.log("WSL version is 2");
 
         const dockerVersion = await this.checkDockerVersion();
         if (!dockerVersion) {
             return 2;
         }
+        console.log("Docker version is ", dockerVersion);
 
         return 3;
     }
