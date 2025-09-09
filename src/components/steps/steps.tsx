@@ -178,7 +178,7 @@ export const AnimatedStepperLayout: React.FC<AnimatedStepperLayoutProps> = ({
 									<p className="mt-1 text-sm text-gray-600">{steps[safeIndex].description}</p>
 								) : null}
 							</header>
-							<section className="space-y-4">
+							<section className="space-y-4 h-full">
 								{mainContent}
 							</section>
 						</motion.main>

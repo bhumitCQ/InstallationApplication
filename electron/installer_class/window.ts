@@ -94,8 +94,6 @@ export class WindowInstaller extends Installer {
                 const baseDir = app.getPath('temp');
                 fs.ensureDir(baseDir);
                 const exePath = path.join(baseDir, "DockerDesktopInstaller.exe");
-                const logOut = path.join(baseDir, "docker_install_out.log");
-                const logErr = path.join(baseDir, "docker_install_err.log");
 
                 const writer = fs.createWriteStream(exePath);
                 let downloaded = 0;
@@ -119,7 +117,9 @@ export class WindowInstaller extends Installer {
                         `Installer launch failed: ${err?.message ?? String(err)}`
                     );
                 });
-
+                child.on('message', (message) => {
+                    console.log(message);
+                });
                 child.on("exit", (code) => {
                     if (code === 0) {
                         const dockerDesktopPath = path.join(
@@ -219,6 +219,7 @@ export class WindowInstaller extends Installer {
                     events.emit("wsl-install-event", [null, { total, downloaded }]);
                 });
                 await streamPipeline(resp.data, writer);
+                events.emit("wsl-install-started", [null, { total, downloaded }]);
                 const child = spawn("msiexec.exe", ["/i", tmpFile, "/qn", "/norestart"], {
                     windowsHide: false,
                     stdio: "ignore"
@@ -276,7 +277,7 @@ export class WindowInstaller extends Installer {
     }
 
     async checkWslVersion(): Promise<false | number> {
-        const [stdout, error] = await execPromise("wsl.exe --version");
+        const [stdout, error] = await execPromise("wsl.exe", ["--version"]);
         if (error) {
             return false;
         }
@@ -286,10 +287,10 @@ export class WindowInstaller extends Installer {
 
     async checkCurrentStep(): Promise<number> {
         // Order matters: enable features -> install WSL -> install Docker -> images
-        const isWslAndVMPEnabled = await this.checkWSLAndVMP();
-        if (!isWslAndVMPEnabled.vmp || !isWslAndVMPEnabled.wsl) {
-            return 0;
-        }
+        // const isWslAndVMPEnabled = await this.checkWSLAndVMP();
+        // if (!isWslAndVMPEnabled.vmp || !isWslAndVMPEnabled.wsl) {
+        //     return 0;
+        // }
 
         const wslVersion = await this.checkWslVersion();
         console.log(wslVersion);

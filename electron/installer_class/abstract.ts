@@ -1,4 +1,5 @@
 import Dockerode from "dockerode";
+import { ipcMain } from "electron";
 
 type InstallerConfig = {
     requiredImage?: Array<string>,
@@ -20,7 +21,7 @@ export abstract class Installer {
 
     async checkDockerVersion(): Promise<false | string> {
         const startTime = Date.now();
-        const endTime = startTime + 60 * 1000;
+        const endTime = startTime + 30 * 1000;
         while (Date.now() < endTime) {
             try {
                 if (!this.dockerInstance) {

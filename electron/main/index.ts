@@ -123,3 +123,11 @@ ipcMain.handle('open-win', (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
+
+process.on('uncaughtException', (err) => {
+  console.error(err);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error(err);
+});

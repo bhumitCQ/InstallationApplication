@@ -77,7 +77,7 @@ export const InstallDocker: React.FC = () => {
 					<div className="h-12 w-12 flex items-center justify-center">
 						<Spinner size="lg" />
 					</div>
-					<p className="text-sm text-gray-600">Preparing WSL download…</p>
+					<p className="text-sm text-gray-600">Preparing Docker download…</p>
 				</div>
 			</div>
 		);

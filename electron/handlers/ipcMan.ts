@@ -6,7 +6,6 @@ import { app } from 'electron';
 
 ipcMain.handle('os', (ev, ...isArgumentsObject) => {
     const platform = os.platform();
-    console.log("on Called");
     return platform;
 });
 
@@ -21,18 +20,24 @@ ipcMain.handle('get-current-step', async (ev, ...args) => {
 });
 
 ipcMain.handle('execute-step', async (event, step: unknown) => {
-    if (typeof step !== 'number') {
-        return "Step is not valid";
-    }
-    const events = await Installer.executeStep(step);
-    events.on('*', function (e: string,arg) {
-        if (arg && Array.isArray(arg)) {
-            const args = Array.from(arg)
-            event.sender.send(e, ...args);
-            return;
+    try {
+        console.log("Execution Step: ", step);
+        if (typeof step !== 'number') {
+            return "Step is not valid";
         }
-        event.sender.send(e, arg);
-    });
+        const events = await Installer.executeStep(step);
+        events.on('*', function (e: string,arg) {
+            if (arg && Array.isArray(arg)) {
+                const args = Array.from(arg)
+                event.sender.send(e, ...args);
+                return;
+            }
+            event.sender.send(e, arg);
+        });
+    } catch (error: any) {
+        console.error(error);
+        return { error: error?.message ?? error };
+    }
 });
 
 
@@ -42,4 +47,8 @@ ipcMain.handle('system-restart-now', () => {
         path: app.getPath('exe'), 
     })
     Installer.restart();
+});
+
+ipcMain.handle('app-quit', () => {
+    app.quit();
 });

@@ -55,6 +55,11 @@ export const ProcessPage = () => {
                     title: "Install Docker",
                     description: "Installing Docker",
                 },
+                {
+                    key: "step-4",
+                    title: "Installation Compleated",
+                    description: "Installation Completed",
+                }
             ]}
             renderMain={(activeStep, activeIndex) => {
                 if (activeIndex === 0) {
@@ -67,8 +72,25 @@ export const ProcessPage = () => {
                     return <InstallDocker />
                 }
                 return (
-                    <div>
-                        Rendering
+                    <div className="h-full w-full flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-4 text-center">
+                            <div className="text-2xl font-semibold">Thank you! Installation is complete.</div>
+                            <div className="text-sm text-gray-600 max-w-md">
+                                You can now close this installer. Docker and WSL have been installed and configured.
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await window.ipcRenderer?.invoke('app-quit');
+                                    } catch (e) {
+                                        window.close();
+                                    }
+                                }}
+                                className="inline-flex items-center justify-center rounded-md bg-black text-white px-4 py-2 text-sm font-medium hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 )
             }}
